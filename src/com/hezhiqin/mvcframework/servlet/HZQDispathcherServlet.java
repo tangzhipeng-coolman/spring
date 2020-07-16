@@ -85,7 +85,7 @@ public class HZQDispathcherServlet extends HttpServlet {
     public void init(ServletConfig config)  {//初始化
         Properties configContext = new Properties();
         String r = config.getInitParameter("contextConfigLocation");
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream("config.properties");
+        InputStream is = this.getClass().getClassLoader().getResourceAsStream(r.replace("classpath:",""));
         try {
             //获取配置信息，定位到需要扫描的包下面
             configContext.load(is);

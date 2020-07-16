@@ -10,13 +10,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static java.lang.Character.isUpperCase;
 
@@ -44,7 +44,7 @@ public class HZQDispathcherServlet2 extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        doPost(req, resp);
     }
 
     @Override
@@ -81,6 +81,13 @@ public class HZQDispathcherServlet2 extends HttpServlet {
     }
 
     public void doDispatch(HttpServletRequest request,HttpServletResponse response){
+        response.setContentType("text/html");
+        try {
+            request.setCharacterEncoding("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        response.setCharacterEncoding("utf-8");
         String url = request.getRequestURI();//请求的相对路径
         String contextPath = request.getContextPath();//项目根路径
         url = url.replace(contextPath, "").replaceAll("/+", "/");
@@ -267,11 +274,11 @@ public class HZQDispathcherServlet2 extends HttpServlet {
 
         //scanPackage = com.hezhiqin存储的是包路径
         //转化成文件路径，实际就是把.转化成/即可
-        URL url = Thread.currentThread().getContextClassLoader().getResource("/"+scanPackage.replaceAll(".","/"));
+        URL url = this.getClass().getClassLoader().getResource("/"+scanPackage.replaceAll("\\.","/"));
         File classDir = new File(url.getFile());
         for(File file:classDir.listFiles()){
             if(file.isDirectory()){
-                doScanner(scanPackage+"/"+file.getName());
+                doScanner(scanPackage+"."+file.getName());
             }else {
                 if(!file.getName().contains(".class")){
                     continue;
@@ -291,7 +298,7 @@ public class HZQDispathcherServlet2 extends HttpServlet {
         //从类路径下获取spring的配置文件（在src下面）
         //读取配置文件放到Properties对象中
         //相对于scanPackage=com.hezhiqin从文件保存到了内存中去
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(contextConfigLocation);
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(contextConfigLocation.replace("classpath:",""));
         try {
             contextConfig.load(inputStream);
         } catch (IOException e) {
